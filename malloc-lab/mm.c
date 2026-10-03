@@ -97,7 +97,7 @@ int mm_init(void)
     PUT((heap_list_p + 3*WSIZE), PACK(0, 1));
 
     // bp 이동하기
-    // bp = 
+    heap_list_p += 2*WSIZE;
 
     return 0;
 }
