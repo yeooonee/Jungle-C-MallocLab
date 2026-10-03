@@ -83,9 +83,12 @@ int mm_init(void)
     // pb (8) + eb (4)
     heap_list_p = mem_sbrk(2*DSIZE);
 
+    // heap list 유효하지 않은 값일 때 처리 (반환값 검사/ 에러 체크)
+    if (heap_list_p == (void *)-1) return -1;
+
     // padding 4B (16 - 8 - 4)
     // 근데 얼마나 padding 나올지 사실 모르니 wsize 를 계산하는 방식으로 구해야하는거 아닌가?
-    PUT(heap_list_p, PACK(WSIZE, 1));
+    PUT(heap_list_p, 0);
 
     // heap 의 prologue block (header + footer) 추가 (size 8 (h + f), alloc 1)
     // header
