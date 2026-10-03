@@ -34,19 +34,71 @@ team_t team = {
     /* Second member's email address (leave blank if none) */
     ""};
 
+/* Basic constants and macros */
+
+#define WSIZE 4
+#define DSIZE 8
+#define CHUNKSIZE (1<<12)
+
+#define MAX(x, y) ((x) > (y)? (x) : (y))
+
+/* Pack a size and allocated bit into a word */
+#define PACK(size, alloc) ((size) | (alloc))
+
+/* Read and write a word at address up */
+#define GET(p) (*(unsigned int *)(p))
+#define PUT(p, val) (*(unsigned int *)(p) = (val))
+
+/* Read the size and allocated fields from address p */
+#define GET_SIZE(p) (GET(p) & ~0x7)
+#define GET_ALLOC(p) (GET(p) & 0x1)
+
+/* Given block ptr bp, compute address of its header and footer */
+#define HDRP(bp) ((char *)(bp) - WSIZE)
+#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+
+/* Given block ptr bp, compute address of next and previous blocks */
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+#define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
+
+
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
 
 /* rounds up to the nearest multiple of ALIGNMENT */
 #define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~0x7)
 
+
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
+
+
+static char *heap_list_p;
 
 /*
  * mm_init - initialize the malloc package.
  */
 int mm_init(void)
 {
+    // heap 리스트 최초로 받아오기 memlib.c 의 sbrk 함수 활용
+    // pb (8) + eb (4)
+    heap_list_p = mem_sbrk(2*DSIZE);
+
+    // padding 4B (16 - 8 - 4)
+    // 근데 얼마나 padding 나올지 사실 모르니 wsize 를 계산하는 방식으로 구해야하는거 아닌가?
+    PACK(WSIZE, 1);
+
+    // heap 의 prologue block (header + footer) 추가 (size 8 (h + f), alloc 1)
+    // header
+    PACK(DSIZE, 1);
+    // footer
+    PACK(DSIZE, 1);
+
+    // heap 의 epilogue block (header) 추가 (size 0, alloc 1)
+    PACK(0, 1);
+
+    // bp 이동하기
+    // bp = 
+
     return 0;
 }
 
