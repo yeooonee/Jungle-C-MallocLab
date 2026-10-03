@@ -91,10 +91,10 @@ int mm_init(void)
     // header
     PUT((heap_list_p + WSIZE), PACK(DSIZE, 1));
     // footer
-    PUT((heap_list_p + WSIZE + DSIZE), PACK(DSIZE, 1));
+    PUT((heap_list_p + WSIZE + WSIZE), PACK(DSIZE, 1));
 
     // heap 의 epilogue block (header) 추가 (size 0, alloc 1)
-    PACK(0, 1);
+    PUT(heap_list_p + WSIZE + WSIZE + WSIZE, PACK(0, 1));
 
     // bp 이동하기
     // bp = 
