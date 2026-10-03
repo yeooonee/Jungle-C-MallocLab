@@ -102,8 +102,18 @@ int mm_init(void)
     // bp 이동하기
     heap_list_p += 2*WSIZE;
 
+    // TODO: malloc 에서 힙 필요 시 늘리기. -> extend_heap 을 호출하고, 없으면 init 하기 
+
     return 0;
 }
+
+/* extend heap */
+static void *extend_heap(size_t words){
+    
+}
+
+
+
 
 /*
  * mm_malloc - Allocate a block by incrementing the brk pointer.
