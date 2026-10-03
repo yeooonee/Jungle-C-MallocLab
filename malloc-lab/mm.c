@@ -47,7 +47,7 @@ team_t team = {
 
 /* Read and write a word at address up */
 #define GET(p) (*(unsigned int *)(p))
-#define PUT(p, val) (*(unsigned int *)(p) = (val))
+#define PUT(p, val) (*(unsigned int *)(p) = (val)) // 값을 주소에 쓴다.
 
 /* Read the size and allocated fields from address p */
 #define GET_SIZE(p) (GET(p) & ~0x7)
@@ -85,13 +85,13 @@ int mm_init(void)
 
     // padding 4B (16 - 8 - 4)
     // 근데 얼마나 padding 나올지 사실 모르니 wsize 를 계산하는 방식으로 구해야하는거 아닌가?
-    PACK(WSIZE, 1);
+    PUT(heap_list_p, PACK(WSIZE, 1));
 
     // heap 의 prologue block (header + footer) 추가 (size 8 (h + f), alloc 1)
     // header
-    PACK(DSIZE, 1);
+    PUT((heap_list_p + WSIZE), PACK(DSIZE, 1));
     // footer
-    PACK(DSIZE, 1);
+    PUT((heap_list_p + WSIZE + DSIZE), PACK(DSIZE, 1));
 
     // heap 의 epilogue block (header) 추가 (size 0, alloc 1)
     PACK(0, 1);
