@@ -72,7 +72,9 @@ team_t team = {
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 
-static char *heap_list_p;
+static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해서 char (1byte)니까 
+// char 는 모든 기계에서 1byte 임 
+// static : 다른 코드에서 참조 하지 말라. 참조할 수 잇는 범위가 파일 안으로 제한됨.
 
 /*
  * mm_init - initialize the malloc package.
@@ -88,7 +90,7 @@ int mm_init(void)
 
     // padding 4B (16 - 8 - 4)
     // 근데 얼마나 padding 나올지 사실 모르니 wsize 를 계산하는 방식으로 구해야하는거 아닌가?
-    PUT(heap_list_p, 0);
+    PUT(heap_list_p, 0); // 근데 이게 4B 가 들어가는게 맞나? 이렇게 적어도? 
 
     // heap 의 prologue block (header + footer) 추가 (size 8 (h + f), alloc 1)
     // header
@@ -103,13 +105,25 @@ int mm_init(void)
     heap_list_p += 2*WSIZE;
 
     // TODO: malloc 에서 힙 필요 시 늘리기. -> extend_heap 을 호출하고, 없으면 init 하기 
+    // mdriver 의 호출 패턴에 맞춰 설계하는 것 금지. 
 
     return 0;
 }
 
 /* extend heap */
 static void *extend_heap(size_t words){
+    // 아무 heap 도 없으면 extend 하기 
     
+}
+
+
+/* find fit */
+static void *find_fit(size_t asize){
+
+}
+
+static void place(){
+
 }
 
 
