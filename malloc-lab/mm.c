@@ -105,15 +105,20 @@ int mm_init(void)
     heap_list_p += 2*WSIZE;
 
     // TODO: malloc 에서 힙 필요 시 늘리기. -> extend_heap 을 호출하고, 없으면 init 하기 
-    // mdriver 의 호출 패턴에 맞춰 설계하는 것 금지. 
+    // mdriver 의 호출 패턴에 맞춰 설계하는 것 금지.
 
     return 0;
 }
 
 /* extend heap */
 static void *extend_heap(size_t words){
-    // 아무 heap 도 없으면 extend 하기 
+    // 아무 heap 도 없으면 init 하기 (유효성 체크)
     
+    // 기존 eb 지워야 하는지?
+
+    // extend heap 구현 (sbrk 함수 호출?)
+
+    // eb 추가 
 }
 
 
