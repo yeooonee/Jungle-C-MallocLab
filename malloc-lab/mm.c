@@ -127,13 +127,14 @@ static void *extend_heap(size_t words){
                 size_t 와 unsigned int 의 차이 : unsigned int 는 최소 16 비트라는 정해진 값, size_t 그 시스템에서 가장 큰 객체의 크기를 담을 수 있는 부호 없는 정수 타입
         - 홀수일 때 처리
             홀수면 + 1
+            아니면 그대로 출력
         - 8의 배수가 아닐 때 align 
 */
-    if (words % 2) 
-        words = 
+    size_t size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
+        
 
     // 2. pointer 돌려주는 위치 정하기
-    heap_list_p = mem_sbrk(words); // old brk 반환하면 payload 자리는 hlp + words 크기
+    heap_list_p = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
 
 
     // eb 추가 
