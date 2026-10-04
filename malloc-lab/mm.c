@@ -114,11 +114,25 @@ int mm_init(void)
 static void *extend_heap(size_t words){
     // 아무 heap 도 없으면 init 하기 (유효성 체크)
     
+
     // 기존 eb 지워야 하는지?
 
-    // extend heap 구현 (sbrk 함수 호출?)
+// extend heap 구현 (sbrk 함수 호출?)
+    // 1. sbrk 할 사이즈
+        // sbrk 함수 확인 (int incr)로 파라미터 값 가져옴. 
+        // int 로 받는데, unsigned int 로 반환해서 줘야하나? 
+            // size_t 와 unsigned int 의 차이 : unsigned int 는 최소 16 비트라는 정해진 값, size_t 그 시스템에서 가장 큰 객체의 크기를 담을 수 있는 부호 없는 정수 타입
+    words
+
+    // 2. pointer 위치 정하기
+    heap_list_p = mem_sbrk(words); // old brk 반환하면 payload 자리는 hlp + words 크기
+
 
     // eb 추가 
+
+
+
+
 }
 
 
