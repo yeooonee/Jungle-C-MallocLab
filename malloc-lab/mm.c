@@ -58,7 +58,7 @@ team_t team = {
 #define GET_NOW_FOOTER(bp) ((char *)(bp) + GET_SIZE(GET_NOW_HEADER(bp)) - DSIZE)
 
 /* Given block ptr bp, compute address of next and previous blocks */
-#define NEXT_BLOCK_HEADER(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
+#define NEXT_BLOCK_FOOTER(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
 #define PREV_BLOCK_HEADER(bp) ((char *)(bp) - GET_SIZE((char *)(bp) - DSIZE))
 
 
@@ -158,7 +158,7 @@ static void *extend_heap(size_t words){
 
     // 4. eb 블록 추가
     // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
-    PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(bp)), PACK_BLOCK(0, 1));
+    PUT(GET_NOW_HEADER(NEXT_BLOCK_FOOTER(bp)), PACK_BLOCK(0, 1));
 
     return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 있으면 병합 처리 
 
@@ -182,7 +182,41 @@ static void place(void *bp, size_t asize){
 
 /* 병합 */
 static void *coalesce(void *bp){
+    // 앞 alloc 체크
+    size_t prev_alloc = GET_ALLOC(PREV_BLOCK_HEADER(bp));
 
+    // 뒤 alloc 체크 
+    size_t next_alloc = GET_ALLOC(NEXT_BLOCK_FOOTER(bp));
+
+    size_t size = GET_SIZE(GET_NOW_HEADER(bp));
+
+    // 케이스에 따라 등록
+    // 1. 둘다 없을 때
+    if (prev_alloc & next_alloc){
+        return bp;
+    }
+
+
+    // 2. 앞에 있을 떄
+    if (!prev_alloc & next_alloc){
+        // 앞 블록 헤더 + 뒷 블록 푸터 사이즈 변경 
+        size += GET_SIZE(PREV_BLOCK_HEADER(bp));
+        PUT(PREV_BLOCK_HEADER(bp), PACK_BLOCK(size, 0));
+        PUT(GET_NOW_FOOTER(bp), PACK_BLOCK(size, 0));
+        // bp 이동 
+    }
+
+    // 3. 뒤에 있을 떄
+    if (prev_alloc & !next_alloc){
+
+    }
+
+
+    // 4. 둘다 있을 때 
+    if (!prev_alloc & !next_alloc){
+
+    }
+    
 }
 
 
@@ -208,6 +242,14 @@ void *mm_malloc(size_t size)
 
     // 파라미터값 체크
     if (size == 0) return NULL;
+
+    /*
+        사이즈 체크
+        1. h + f 추가
+        2. 패딩 추가 
+        3. 
+    
+    */
 
     
     // 전역 p 있으면 find_fit
