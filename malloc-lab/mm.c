@@ -72,6 +72,7 @@ team_t team = {
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 
+// heap 을 처음부터 훑기 위해 넣은 전역변수 
 static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해서 char (1byte)니까 
 // char 는 모든 기계에서 1byte 임 
 // static : 다른 코드에서 참조 하지 말라. 참조할 수 잇는 범위가 파일 안으로 제한됨.
@@ -115,6 +116,7 @@ static void *extend_heap(size_t words){
     // 아무 heap 도 없으면 init 하기 (유효성 체크)
     // 기존 eb 지워야 하는지? -> 자동으로 덮어써짐. header 가 덮어씀 
 
+    char *bp;
 
 /*
 // extend heap 구현 (sbrk 함수 호출?)
@@ -136,23 +138,23 @@ static void *extend_heap(size_t words){
     size_t size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
         
     // 2. pointer 돌려주는 위치 정하기
-    heap_list_p = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
+    bp = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
 
 
     // 새로운 블록 처리
     // 1. header 블록 추가
     // PUT(heap_list_p - WSIZE, PACK_BLOCK(size, 0)); 
-    PUT(GET_NOW_HEADER(heap_list_p), PACK_BLOCK(size, 0)); 
+    PUT(GET_NOW_HEADER(bp), PACK_BLOCK(size, 0)); 
 
     // 3. footer 블록 추가
     // PUT(heap_list_p + size - DSIZE, PACK_BLOCK(size, 0)); 
-    PUT(GET_NOW_FOOTER(heap_list_p), PACK_BLOCK(size, 0)); 
+    PUT(GET_NOW_FOOTER(bp), PACK_BLOCK(size, 0)); 
 
     // 4. eb 블록 추가
     // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
-    PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(heap_list_p)), PACK_BLOCK(0, 1));
+    PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(bp)), PACK_BLOCK(0, 1));
 
-    return coalesce(heap_list_p);
+    return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 
 
 }
 
