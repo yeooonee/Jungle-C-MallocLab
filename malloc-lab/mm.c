@@ -183,10 +183,10 @@ static void place(void *bp, size_t asize){
 /* 병합 */
 static void *coalesce(void *bp){
     // 앞 alloc 체크
-    size_t prev_alloc = GET_ALLOC(PREV_BLKP(bp));
+    size_t prev_alloc = GET_ALLOC(GET_FOOTER(PREV_BLKP(bp)));
 
     // 뒤 alloc 체크 
-    size_t next_alloc = GET_ALLOC(NEXT_BLKP(bp));
+    size_t next_alloc = GET_ALLOC(GET_HEADER(NEXT_BLKP(bp)));
 
     size_t size = GET_SIZE(GET_HEADER(bp));
 
@@ -214,8 +214,6 @@ static void *coalesce(void *bp){
         size += GET_SIZE(NEXT_BLKP(bp));
         PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
         PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
-
-        bp = NEXT_BLKP(bp);
     }
 
 
