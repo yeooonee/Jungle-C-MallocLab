@@ -237,7 +237,13 @@ static void *coalesce(void *bp){
 
 // 외부에서 사용하니까 static 없이 
 void mm_free(void *bp){
+    // 현재 bp alloc 0 으로 변경
+    size_t size = GET_SIZE(GET_HEADER(bp));
+    PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
+    PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0));
 
+    // coalesce 호출 
+    return coalesce(bp);
 }
 
 
