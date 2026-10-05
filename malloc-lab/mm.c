@@ -143,18 +143,18 @@ static void *extend_heap(size_t words){
 
     // 새로운 블록 처리
     // 1. header 블록 추가
-    PUT(heap_list_p, PACK_BLOCK(size, 0));
+    PUT(heap_list_p, PACK_BLOCK(size, 0)); 
 
     // 2. payload 블록 추가 
-    PUT(heap_list_p + WSIZE, PACK_BLOCK(size, 0));
+    PUT(heap_list_p + WSIZE, PACK_BLOCK(size, 0)); 
 
     // 3. footer 블록 추가
-    PUT(heap_list_p + size - WSIZE, PACK_BLOCK(size, 0));
+    PUT(heap_list_p + size - WSIZE, PACK_BLOCK(size, 0)); 
 
     // 4. eb 블록 추가
-    PUT(heap_list_p + size, PACK_BLOCK(0, 1));
+    PUT(heap_list_p + size, PACK_BLOCK(0, 1)); 
 
-    
+
 
 
 }
