@@ -43,7 +43,7 @@ team_t team = {
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 
 /* Pack a size and allocated bit into a word */
-#define PACK(size, alloc) ((size) | (alloc))
+#define PACK_BLOCK(size, alloc) ((size) | (alloc))
 
 /* Read and write a word at address up */
 #define GET(p) (*(unsigned int *)(p))
@@ -94,12 +94,12 @@ int mm_init(void)
 
     // heap 의 prologue block (header + footer) 추가 (size 8 (h + f), alloc 1)
     // header
-    PUT((heap_list_p + WSIZE), PACK(DSIZE, 1));
+    PUT((heap_list_p + WSIZE), PACK_BLOCK(DSIZE, 1));
     // footer
-    PUT((heap_list_p + 2*WSIZE), PACK(DSIZE, 1));
+    PUT((heap_list_p + 2*WSIZE), PACK_BLOCK(DSIZE, 1));
 
     // heap 의 epilogue block (header) 추가 (size 0, alloc 1)
-    PUT((heap_list_p + 3*WSIZE), PACK(0, 1));
+    PUT((heap_list_p + 3*WSIZE), PACK_BLOCK(0, 1));
 
     // bp 이동하기
     heap_list_p += 2*WSIZE;
@@ -137,14 +137,24 @@ static void *extend_heap(size_t words){
 */
     size_t size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
         
-
     // 2. pointer 돌려주는 위치 정하기
     heap_list_p = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
 
 
-    // eb 추가 
+    // 새로운 블록 처리
+    // 1. header 블록 추가
+    PUT(heap_list_p, PACK_BLOCK(size, 0));
 
+    // 2. payload 블록 추가 
+    PUT(heap_list_p + WSIZE, PACK_BLOCK(size, 0));
 
+    // 3. footer 블록 추가
+    PUT(heap_list_p + size - WSIZE, PACK_BLOCK(size, 0));
+
+    // 4. eb 블록 추가
+    PUT(heap_list_p + size, PACK_BLOCK(0, 1));
+
+    
 
 
 }
