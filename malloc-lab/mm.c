@@ -296,12 +296,12 @@ void *mm_malloc(size_t size)
 void mm_free(void *ptr)
 {
     // 현재 bp alloc 0 으로 변경
-    size_t size = GET_SIZE(GET_HEADER(bp));
-    PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
-    PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0));
+    size_t size = GET_SIZE(GET_HEADER(ptr));
+    PUT(GET_HEADER(ptr), PACK_BLOCK(size, 0));
+    PUT(GET_FOOTER(ptr), PACK_BLOCK(size, 0));
 
     // coalesce 호출 
-    return coalesce(bp);
+    return coalesce(ptr);
 }
 
 /*
