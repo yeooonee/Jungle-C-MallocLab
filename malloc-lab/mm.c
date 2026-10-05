@@ -45,19 +45,19 @@ team_t team = {
 /* Pack a size and allocated bit into a word */
 #define PACK_BLOCK(size, alloc) ((size) | (alloc))
 
-/* Read and write a word at address up */
+/* Read and write a word at address up / p => value */
 #define GET(p) (*(unsigned int *)(p))
 #define PUT(p, val) (*(unsigned int *)(p) = (val)) // 값을 주소에 쓴다.
 
-/* Read the size and allocated fields from address p */
+/* Read the size and allocated fields from address p / p => value */
 #define GET_SIZE(p) (GET(p) & ~0x7)
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
-/* Given block ptr bp, compute address of its header and footer */
+/* Given block ptr bp, compute address of its header and footer / bp => p */
 #define GET_HEADER(bp) ((char *)(bp) - WSIZE)
 #define GET_FOOTER(bp) ((char *)(bp) + GET_SIZE(GET_HEADER(bp)) - DSIZE)
 
-/* Given block ptr bp, compute address of next and previous blocks */
+/* Given block ptr bp, compute address of next and previous blocks / bp => bp */
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE((char *)(bp) - DSIZE))
 
@@ -204,14 +204,14 @@ static void *find_fit(size_t asize){
 static void place(void *bp, size_t asize){
     size_t block_size = GET_SIZE(GET_HEADER(bp));
     
-    if (block_size > 2 * asize){
+    if (block_size > 2 * asize){ // TODO 
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
 
         // bp + size 했을 때 
         PUT(GET_HEADER(bp), PACK_BLOCK(asize, 1));
         
-        PUT(bp + asize, PACK_BLOCK(asize, 1)); // bp 바꾸기 
-        PUT(bp + asize + WSIZE, PACK_BLOCK(block_size - asize, 0));
+        PUT((bp + asize - DSIZE), PACK_BLOCK(asize, 1)); // bp 바꾸기 
+        PUT((bp + asize - DSIZE + WSIZE), PACK_BLOCK(block_size - asize, 0));
 
     } else {
         PUT(GET_HEADER(bp), PACK_BLOCK(block_size, 1));
@@ -342,7 +342,7 @@ void mm_free(void *ptr)
     PUT(GET_FOOTER(ptr), PACK_BLOCK(size, 0));
 
     // coalesce 호출 
-    return coalesce(ptr);
+    coalesce(ptr);
 }
 
 /*
