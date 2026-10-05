@@ -141,7 +141,10 @@ static void *extend_heap(size_t words){
     bp = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
 
     // 반환값 검사 
-    if (bp == (void *)-1) return -1;    
+    if (bp == (void *)-1) {
+        // TODO bp 에러 로그 남기기 
+        return NULL;    
+    }
 
     // 새로운 블록 처리
     // 1. header 블록 추가
