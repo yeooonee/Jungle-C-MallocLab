@@ -292,9 +292,6 @@ void *mm_malloc(size_t size)
     newsize = newsize + DSIZE; // h + f 사이즈 추가
     
     char *bp;
-
-   
-
     
     // find_fit
     bp = find_fit(newsize);
@@ -313,15 +310,8 @@ void *mm_malloc(size_t size)
             }
         }
 
-            
 
     // 전역 p 없으면 init -> 근데 모든 함수 전에 init 이 실행된다고 했음 
-    
-    
-
-
-
-
 
 
     // 해당 사이즈에 대해 바로 새 메모리 받아옴 - 주석처리
@@ -333,9 +323,6 @@ void *mm_malloc(size_t size)
     //     *(size_t *)p = size;
     //     return (void *)((char *)p + SIZE_T_SIZE);
     // }
-
-
-
 }
 
 /*
