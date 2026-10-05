@@ -263,11 +263,6 @@ static void *coalesce(void *bp){
  */
 void *mm_malloc(size_t size)
 {
-    int newsize = ALIGN(size + SIZE_T_SIZE);
-    newsize = newsize + DSIZE; // h + f 사이즈 추가
-    
-    char *bp;
-
     // 파라미터값 체크
     if (size == 0) return NULL;
 
@@ -278,16 +273,28 @@ void *mm_malloc(size_t size)
         3. 
     
     */
+    int newsize = ALIGN(size + SIZE_T_SIZE);
+    newsize = newsize + DSIZE; // h + f 사이즈 추가
+    
+    char *bp;
+
+   
 
     
-    // 전역 p 있으면 find_fit
+    // find_fit
+    bp = find_fit(newsize);
 
         // find_fit 체크
-
+        if (bp){   // 있으면 
             // 있으면 바로 넣기
-            
-            // 없으면 extend_heap 호출 
+            place(bp, newsize);
+            return bp;
 
+        } else { // 없으면 extend heap
+
+        }
+
+            
 
     // 전역 p 없으면 init
     
