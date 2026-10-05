@@ -166,6 +166,8 @@ static void place(){
 
 }
 
+
+/* 병합 */
 static void *coalesce(void *bp){
 
 }
