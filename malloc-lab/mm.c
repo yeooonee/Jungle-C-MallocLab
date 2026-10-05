@@ -166,7 +166,8 @@ static void *find_fit(size_t asize){
 
 }
 
-static void place(){
+// 가용블록 배치 및 분할
+static void place(void *bp, size_t asize){
 
 }
 
@@ -195,6 +196,25 @@ void *mm_malloc(size_t size)
     int newsize = ALIGN(size + SIZE_T_SIZE);
     newsize = newsize + DSIZE; // h + f 사이즈 추가
     
+    char *bp;
+
+    // heap 확인 
+        // 전역 p 있으면 find_fit
+
+            // find_fit 체크
+
+                // 있으면 바로 넣기
+                
+                // 없으면 extend_heap 호출 
+
+
+        // 전역 p 없으면 init
+    
+    
+
+
+
+
 
 
     // 해당 사이즈에 대해 바로 새 메모리 받아옴 - 주석처리
