@@ -140,6 +140,8 @@ static void *extend_heap(size_t words){
     // 2. pointer 돌려주는 위치 정하기
     bp = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
 
+    // 반환값 검사 
+    if (bp == (void *)-1) return -1;    
 
     // 새로운 블록 처리
     // 1. header 블록 추가
@@ -191,8 +193,8 @@ void mm_free(void *bp){
 void *mm_malloc(size_t size)
 {
     int newsize = ALIGN(size + SIZE_T_SIZE);
-
-
+    newsize = newsize + DSIZE; // h + f 사이즈 추가
+    
 
 
     // 해당 사이즈에 대해 바로 새 메모리 받아옴 - 주석처리
