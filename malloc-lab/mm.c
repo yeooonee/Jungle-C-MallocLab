@@ -191,14 +191,22 @@ void mm_free(void *bp){
 void *mm_malloc(size_t size)
 {
     int newsize = ALIGN(size + SIZE_T_SIZE);
-    void *p = mem_sbrk(newsize);
-    if (p == (void *)-1)
-        return NULL;
-    else
-    {
-        *(size_t *)p = size;
-        return (void *)((char *)p + SIZE_T_SIZE);
-    }
+
+
+
+
+    // 해당 사이즈에 대해 바로 새 메모리 받아옴 - 주석처리
+    // void *p = mem_sbrk(newsize);
+    // if (p == (void *)-1)
+    //     return NULL;
+    // else
+    // {
+    //     *(size_t *)p = size;
+    //     return (void *)((char *)p + SIZE_T_SIZE);
+    // }
+
+
+
 }
 
 /*
