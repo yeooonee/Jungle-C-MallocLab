@@ -112,6 +112,9 @@ int mm_init(void)
     return 0;
 }
 
+static void *coalesce(void *bp);
+
+
 /* extend heap */
 static void *extend_heap(size_t words){
     // 아무 heap 도 없으면 init 하기 (유효성 체크)
@@ -218,6 +221,8 @@ static void place(void *bp, size_t asize){
 }
 
 
+
+
 /* 병합 */
 static void *coalesce(void *bp){
     // 앞 alloc 체크
@@ -230,13 +235,13 @@ static void *coalesce(void *bp){
 
     // 케이스에 따라 등록
     // 1. 둘다 없을 때
-    if (prev_alloc & next_alloc){
+    if (prev_alloc && next_alloc){
         return bp;
     }
 
 
     // 2. 앞에 있을 떄
-    if (!prev_alloc & next_alloc){
+    if (!prev_alloc && next_alloc){
         // 앞 블록 헤더 + 현재 블록 푸터 사이즈 변경 
         size += GET_SIZE(PREV_BLKP(bp));
         PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
@@ -247,7 +252,7 @@ static void *coalesce(void *bp){
     }
 
     // 3. 뒤에 있을 떄
-    else if (prev_alloc & !next_alloc){
+    else if (prev_alloc && !next_alloc){
         // 현재 블록 헤더 + 뒷 블록 푸터 사이즈 변경
         size += GET_SIZE(NEXT_BLKP(bp));
         PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
