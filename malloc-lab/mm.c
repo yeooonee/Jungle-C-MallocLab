@@ -199,7 +199,7 @@ static void *coalesce(void *bp){
 
     // 2. 앞에 있을 떄
     if (!prev_alloc & next_alloc){
-        // 앞 블록 헤더 + 뒷 블록 푸터 사이즈 변경 
+        // 앞 블록 헤더 + 현재 블록 푸터 사이즈 변경 
         size += GET_SIZE(PREV_BLKP(bp));
         PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
         PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0));
