@@ -193,13 +193,27 @@ static void *find_fit(size_t asize){
 
 }
 
-// 가용블록 배치 및 분할
+// 가용블록 할당 및 분할
 /*
     어떤 기준으로 분할해 주는게 맞을까?
-    - 남는 블록이 8바이트 보다 작으면 같이 줄까? 
+    - 남는 블록이 8바이트 보다 작으면 같이 줄까? -> 대충 2배 이상일때는 일단 분할하기
 */
 static void place(void *bp, size_t asize){
-    
+    size_t block_size = GET_SIZE(GET_HEADER(bp));
+    if (block_size > 2 * asize){
+        PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
+
+        // bp + size 했을 때 
+        PUT(GET_HEADER(bp), PACK_BLOCK(asize, 1));
+        
+        PUT(bp + asize, PACK_BLOCK(asize, 1)); // bp 바꾸기 
+        PUT(bp + asize + WSIZE, PACK_BLOCK(block_size - asize, 0));
+
+    } else {
+        PUT(GET_HEADER(bp), PACK_BLOCK(block_size, 1));
+        PUT(GET_FOOTER(bp), PACK_BLOCK(block_size, 1));
+        
+    }
 }
 
 
