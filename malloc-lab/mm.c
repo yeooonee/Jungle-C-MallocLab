@@ -170,6 +170,9 @@ static void *find_fit(size_t asize){
 }
 
 // 가용블록 배치 및 분할
+/*
+    어떤 기준으로 분할해 주는게 맞을까?
+*/
 static void place(void *bp, size_t asize){
 
 }
