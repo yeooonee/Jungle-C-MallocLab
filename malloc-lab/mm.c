@@ -209,7 +209,7 @@ static void *coalesce(void *bp){
     }
 
     // 3. 뒤에 있을 떄
-    if (prev_alloc & !next_alloc){
+    else if (prev_alloc & !next_alloc){
         // 현재 블록 헤더 + 뒷 블록 푸터 사이즈 변경
         size += GET_SIZE(NEXT_BLKP(bp));
         PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
@@ -218,7 +218,7 @@ static void *coalesce(void *bp){
 
 
     // 4. 둘다 있을 때 
-    if (!prev_alloc & !next_alloc){
+    else {
         size += GET_SIZE(PREV_BLKP(bp));
         size += GET_SIZE(NEXT_BLKP(bp));
 
