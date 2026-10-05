@@ -79,6 +79,7 @@ static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해�
 
 /*
  * mm_init - initialize the malloc package.
+ mm_init 은 다른 모든 함수 전에 호출된다.
  */
 int mm_init(void)
 {
@@ -159,7 +160,7 @@ static void *extend_heap(size_t words){
     // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
     PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(bp)), PACK_BLOCK(0, 1));
 
-    return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 
+    return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 있으면 병합 처리 
 
 }
 
@@ -172,6 +173,7 @@ static void *find_fit(size_t asize){
 // 가용블록 배치 및 분할
 /*
     어떤 기준으로 분할해 주는게 맞을까?
+    - 남는 블록이 8바이트 보다 작으면 같이 줄까? 
 */
 static void place(void *bp, size_t asize){
 
@@ -204,17 +206,20 @@ void *mm_malloc(size_t size)
     
     char *bp;
 
-    // heap 확인 
-        // 전역 p 있으면 find_fit
+    // 파라미터값 체크
+    if (size == 0) return NULL;
 
-            // find_fit 체크
+    
+    // 전역 p 있으면 find_fit
 
-                // 있으면 바로 넣기
-                
-                // 없으면 extend_heap 호출 
+        // find_fit 체크
+
+            // 있으면 바로 넣기
+            
+            // 없으면 extend_heap 호출 
 
 
-        // 전역 p 없으면 init
+    // 전역 p 없으면 init
     
     
 
