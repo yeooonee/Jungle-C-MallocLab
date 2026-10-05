@@ -306,12 +306,16 @@ void *mm_malloc(size_t size)
             return bp;
 
         } else { // 없으면 extend heap
-
+            bp = extend_heap(newsize);
+            if(bp){
+                place(bp, newsize);
+                return bp;
+            }
         }
 
             
 
-    // 전역 p 없으면 init
+    // 전역 p 없으면 init -> 근데 모든 함수 전에 init 이 실행된다고 했음 
     
     
 
