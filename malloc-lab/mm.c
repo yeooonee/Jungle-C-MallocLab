@@ -200,6 +200,7 @@ static void *find_fit(size_t asize){
 */
 static void place(void *bp, size_t asize){
     size_t block_size = GET_SIZE(GET_HEADER(bp));
+    
     if (block_size > 2 * asize){
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
 
