@@ -55,11 +55,11 @@ team_t team = {
 
 /* Given block ptr bp, compute address of its header and footer */
 #define GET_NOW_HEADER(bp) ((char *)(bp) - WSIZE)
-#define GET_NOW_FOOTER(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+#define GET_NOW_FOOTER(bp) ((char *)(bp) + GET_SIZE(GET_NOW_HEADER(bp)) - DSIZE)
 
 /* Given block ptr bp, compute address of next and previous blocks */
-#define NEXT_BLOCK_HEADER(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
-#define PREV_BLOCK_HEADER(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
+#define NEXT_BLOCK_HEADER(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
+#define PREV_BLOCK_HEADER(bp) ((char *)(bp) - GET_SIZE((char *)(bp) - DSIZE))
 
 
 /* single word (4) or double word (8) alignment */
@@ -113,9 +113,7 @@ int mm_init(void)
 /* extend heap */
 static void *extend_heap(size_t words){
     // 아무 heap 도 없으면 init 하기 (유효성 체크)
-    
-
-    // 기존 eb 지워야 하는지?
+    // 기존 eb 지워야 하는지? -> 자동으로 덮어써짐. header 가 덮어씀 
 
 
 /*
@@ -143,19 +141,18 @@ static void *extend_heap(size_t words){
 
     // 새로운 블록 처리
     // 1. header 블록 추가
-    PUT(heap_list_p, PACK_BLOCK(size, 0)); 
-
-    // 2. payload 블록 추가 
-    PUT(heap_list_p + WSIZE, PACK_BLOCK(size, 0)); 
+    // PUT(heap_list_p - WSIZE, PACK_BLOCK(size, 0)); 
+    PUT(GET_NOW_HEADER(heap_list_p), PACK_BLOCK(size, 0)); 
 
     // 3. footer 블록 추가
-    PUT(heap_list_p + size - WSIZE, PACK_BLOCK(size, 0)); 
+    // PUT(heap_list_p + size - DSIZE, PACK_BLOCK(size, 0)); 
+    PUT(GET_NOW_FOOTER(heap_list_p), PACK_BLOCK(size, 0)); 
 
     // 4. eb 블록 추가
-    PUT(heap_list_p + size, PACK_BLOCK(0, 1)); 
+    // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
+    PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(heap_list_p)), PACK_BLOCK(0, 1));
 
-
-
+    return coalesce(heap_list_p);
 
 }
 
@@ -166,6 +163,17 @@ static void *find_fit(size_t asize){
 }
 
 static void place(){
+
+}
+
+static void *coalesce(void *bp){
+
+}
+
+
+
+// 외부에서 사용하니까 static 없이 
+void mm_free(void *bp){
 
 }
 
