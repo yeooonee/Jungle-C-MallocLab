@@ -54,11 +54,11 @@ team_t team = {
 #define GET_ALLOC(p) (GET(p) & 0x1)
 
 /* Given block ptr bp, compute address of its header and footer */
-#define GET_NOW_HEADER(bp) ((char *)(bp) - WSIZE)
-#define GET_NOW_FOOTER(bp) ((char *)(bp) + GET_SIZE(GET_NOW_HEADER(bp)) - DSIZE)
+#define GET_HEADER(bp) ((char *)(bp) - WSIZE)
+#define GET_FOOTER(bp) ((char *)(bp) + GET_SIZE(GET_HEADER(bp)) - DSIZE)
 
 /* Given block ptr bp, compute address of next and previous blocks */
-#define NEXT_BLOCK_HEADER(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE((char *)(bp) - WSIZE))
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE((char *)(bp) - DSIZE))
 
 
@@ -150,15 +150,15 @@ static void *extend_heap(size_t words){
     // 새로운 블록 처리
     // 1. header 블록 추가
     // PUT(heap_list_p - WSIZE, PACK_BLOCK(size, 0)); 
-    PUT(GET_NOW_HEADER(bp), PACK_BLOCK(size, 0)); 
+    PUT(GET_HEADER(bp), PACK_BLOCK(size, 0)); 
 
     // 3. footer 블록 추가
     // PUT(heap_list_p + size - DSIZE, PACK_BLOCK(size, 0)); 
-    PUT(GET_NOW_FOOTER(bp), PACK_BLOCK(size, 0)); 
+    PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0)); 
 
     // 4. eb 블록 추가
     // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
-    PUT(GET_NOW_HEADER(NEXT_BLOCK_HEADER(bp)), PACK_BLOCK(0, 1));
+    PUT(GET_HEADER(NEXT_BLKP(bp)), PACK_BLOCK(0, 1));
 
     return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 있으면 병합 처리 
 
@@ -186,9 +186,9 @@ static void *coalesce(void *bp){
     size_t prev_alloc = GET_ALLOC(PREV_BLKP(bp));
 
     // 뒤 alloc 체크 
-    size_t next_alloc = GET_ALLOC(NEXT_BLOCK_HEADER(bp));
+    size_t next_alloc = GET_ALLOC(NEXT_BLKP(bp));
 
-    size_t size = GET_SIZE(GET_NOW_HEADER(bp));
+    size_t size = GET_SIZE(GET_HEADER(bp));
 
     // 케이스에 따라 등록
     // 1. 둘다 없을 때
@@ -201,23 +201,37 @@ static void *coalesce(void *bp){
     if (!prev_alloc & next_alloc){
         // 앞 블록 헤더 + 뒷 블록 푸터 사이즈 변경 
         size += GET_SIZE(PREV_BLKP(bp));
-        PUT(GET_NOW_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
-        PUT(GET_NOW_FOOTER(bp), PACK_BLOCK(size, 0));
+        PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
+        PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0));
         // bp 이동 
-        bp = bp - GET_SIZE(PREV_BLKP(bp));
+        // bp = bp - GET_SIZE(PREV_BLKP(bp));
         bp = PREV_BLKP(bp);
     }
 
     // 3. 뒤에 있을 떄
     if (prev_alloc & !next_alloc){
+        // 현재 블록 헤더 + 뒷 블록 푸터 사이즈 변경
+        size += GET_SIZE(NEXT_BLKP(bp));
+        PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
+        PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
 
+        bp = NEXT_BLKP(bp);
     }
 
 
     // 4. 둘다 있을 때 
     if (!prev_alloc & !next_alloc){
+        size += GET_SIZE(PREV_BLKP(bp));
+        size += GET_SIZE(NEXT_BLKP(bp));
+
+        PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
+        PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
+
+        bp = PREV_BLKP(bp);
 
     }
+
+    return bp;
     
 }
 
