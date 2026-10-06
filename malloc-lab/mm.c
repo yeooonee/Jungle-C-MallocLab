@@ -167,10 +167,8 @@ static void *extend_heap(size_t words){
 
 }
 
-
-/* find fit */
-static void *find_fit(size_t asize){
-    
+/* find fit - first */
+static void *find_fid_first (size_t asize){
     // first_fit
     char *bp = heap_list_p;
     bp = NEXT_BLKP(bp);
@@ -179,7 +177,7 @@ static void *find_fit(size_t asize){
     // char ;
 
     while(size > 0){
-        if(size >= asize && !alloc_chk){
+        if(!alloc_chk && size >= asize ){
             return bp;
         }
         bp = NEXT_BLKP(bp);
@@ -188,11 +186,19 @@ static void *find_fit(size_t asize){
     }
 
     return NULL; 
+}
 
 
 
-    // next_fit
-    // 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
+// next_fit
+// 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
+
+/* find fit */
+static void *find_fit(size_t asize){
+    
+
+
+
 
 }
 
@@ -204,7 +210,8 @@ static void *find_fit(size_t asize){
 static void place(void *bp, size_t asize){
     size_t block_size = GET_SIZE(GET_HEADER(bp));
     
-    if (block_size > asize ){ // TODO 
+    if (block_size > asize ){ // 분할 
+
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
 
         // bp + size 했을 때 
