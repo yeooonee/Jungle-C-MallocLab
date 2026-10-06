@@ -178,6 +178,7 @@ static void *find_fit_first (size_t asize){
 
     while(size > 0){
         if(!alloc_chk && size >= asize ){
+        // if(size >= asize && !alloc_chk ){
             return bp;
         }
         bp = NEXT_BLKP(bp);
@@ -215,8 +216,10 @@ static void *find_fit(size_t asize){
 */
 static void place(void *bp, size_t asize){
     size_t block_size = GET_SIZE(GET_HEADER(bp));
-    
-    if (block_size > asize ){ // 분할 
+
+    // block_size - asize > 8 (최소 H + F 자리 남기기)    
+    // if (block_size - asize > 8 ){ // 분할 
+    if(block_size > asize){
 
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
 
@@ -231,6 +234,7 @@ static void place(void *bp, size_t asize){
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size, 1));
         
     }
+
 }
 
 
@@ -302,12 +306,9 @@ void *mm_malloc(size_t size)
     /*
         사이즈 체크
         1. h + f 추가
-        2. 패딩 추가 
-        3. 
-    
+        2. 패딩 추가     
     */
     int newsize = ALIGN(size + SIZE_T_SIZE);
-    newsize = newsize + DSIZE; // h + f 사이즈 추가
     
     char *bp;
     
