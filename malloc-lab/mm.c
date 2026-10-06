@@ -38,7 +38,7 @@ team_t team = {
 
 #define WSIZE 4
 #define DSIZE 8
-#define CHUNKSIZE (1<<12)
+#define CHUNKSIZE (1<<12) // 4096
 
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 
@@ -221,13 +221,13 @@ static void place(void *bp, size_t asize){
     // if (block_size - asize > 8 ){ // 분할 
     if(block_size > asize){
 
-        PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
-
         // bp + size 했을 때 
-        PUT(GET_HEADER(bp), PACK_BLOCK(asize, 1));
+        PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0)); // 가용블록 남기기
+        PUT(GET_HEADER(bp), PACK_BLOCK(asize, 1)); // 분할블록 header 추가 
+
         
-        PUT((bp + asize - DSIZE), PACK_BLOCK(asize, 1)); // bp 바꾸기 
-        PUT((bp + asize - DSIZE + WSIZE), PACK_BLOCK(block_size - asize, 0));
+        PUT((bp + asize - DSIZE), PACK_BLOCK(asize, 1)); // 분할블록 footer 추가  
+        PUT((bp + asize - DSIZE + WSIZE), PACK_BLOCK(block_size - asize, 0)); // 가용블록 남기기
 
     } else {
         PUT(GET_HEADER(bp), PACK_BLOCK(block_size, 1));
@@ -322,7 +322,7 @@ void *mm_malloc(size_t size)
         return bp;
 
     } else { // 없으면 extend heap
-        bp = extend_heap(MAX(newsize, CHUNKSIZE));
+        bp = extend_heap(MAX(newsize, CHUNKSIZE)/WSIZE);
         if(bp){
             place(bp, newsize);
             return bp;
