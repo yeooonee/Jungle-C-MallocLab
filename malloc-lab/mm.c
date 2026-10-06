@@ -378,12 +378,12 @@ void *mm_realloc(void *ptr, size_t size)
 
     */
 
-
-
-
-
     // 새로 받아서 옮기기
-    if(ptr == NULL || size == 0) return NULL;
+    if(ptr == NULL) return mm_malloc(size);
+    if(size == 0) {
+        mm_free(ptr);
+        return NULL;
+    }
     
     void *oldbp = ptr;
     void *newbp;
@@ -402,7 +402,7 @@ void *mm_realloc(void *ptr, size_t size)
     
     
     // 3. 새로운 메모리 > 기존 메모리
-    else if (old_size > new_size) {
+    else {
         newbp = mm_malloc(size);
         if (newbp == NULL) return NULL;
         memcpy(newbp, oldbp, copySize);
