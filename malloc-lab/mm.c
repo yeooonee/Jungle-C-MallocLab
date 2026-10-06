@@ -140,6 +140,7 @@ static void *extend_heap(size_t words){
         * 워드 -> 바이트 : * WSIZE 하기. mem_sbrk 에서 바이트로 받음 
 */
     size_t size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
+
         
     // 2. pointer 돌려주는 위치 정하기
     bp = mem_sbrk(size); // old brk 반환하면 payload 자리는 hlp + words 크기
@@ -163,7 +164,7 @@ static void *extend_heap(size_t words){
     // PUT(heap_list_p + size - WSIZE, PACK_BLOCK(0, 1)); 
     PUT(GET_HEADER(NEXT_BLKP(bp)), PACK_BLOCK(0, 1));
 
-    return coalesce(bp); // 앞에 작은 크기의 블록이 있을 수 있으니 있으면 병합 처리 
+    return coalesce(bp); // 앞뒤에 블록이 있을 수 있으니 있으면 병합 처리 
 
 }
 
@@ -178,7 +179,6 @@ static void *find_fit_first (size_t asize){
 
     while(size > 0){
         if(!alloc_chk && size >= asize ){
-        // if(size >= asize && !alloc_chk ){
             return bp;
         }
         bp = NEXT_BLKP(bp);
@@ -315,19 +315,19 @@ void *mm_malloc(size_t size)
     // find_fit
     bp = find_fit(newsize);
 
-        // find_fit 체크
-        if (bp){   // 있으면 
-            // 있으면 바로 넣기
+    // find_fit 체크
+    if (bp){   // 있으면 
+        // 있으면 바로 넣기
+        place(bp, newsize);
+        return bp;
+
+    } else { // 없으면 extend heap
+        bp = extend_heap(MAX(newsize, CHUNKSIZE));
+        if(bp){
             place(bp, newsize);
             return bp;
-
-        } else { // 없으면 extend heap
-            bp = extend_heap(newsize);
-            if(bp){
-                place(bp, newsize);
-                return bp;
-            }
         }
+    }
 
 
     // 전역 p 없으면 init -> 근데 모든 함수 전에 init 이 실행된다고 했음 
