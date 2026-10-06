@@ -364,17 +364,66 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    void *oldptr = ptr;
-    void *newptr;
+    /* 
+        realloc : 정말 좋은 성능을 얻으려면 독립적인 realloc 이 필요하다.
+        1. 크기가 size 인 블록의 주소를 돌려준다.
+        2. 새 블록의 내용은 옛 크기와 새 크기 중 작은쪽까지 옛 블록과 같다. -> 두 블록 모두에 존재하는 범위까지만 같다. 
+
+        * 새로 받아서 옮기기
+        * 제자리에서 해결하기
+        
+        case
+        1. 새로운 메모리가 기존보다 크기가 작을 때
+        2. 새로운 메모리가 기존보다 클 때
+
+    */
+
+
+
+
+
+    // 새로 받아서 옮기기
+    if(ptr == NULL || size == 0) return NULL;
+    
+    void *oldbp = ptr;
+    void *newbp;
     size_t copySize;
 
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
-        return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-    if (size < copySize)
-        copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    // 새로운 메모리 생성 
+    size_t new_size = ALIGN(size + SIZE_T_SIZE);
+    
+    size_t old_size = GET_SIZE(GET_HEADER(oldbp));
+    copySize = old_size - DSIZE;
+    
+    
+    // 1. 새로운 메모리 = 기존 메모리
+    // 2. 새로운 메모리 < 기존 메모리
+    if (old_size >= new_size) return oldbp; 
+    
+    
+    // 3. 새로운 메모리 > 기존 메모리
+    else if (old_size > new_size) {
+        newbp = mm_malloc(size);
+        if (newbp == NULL) return NULL;
+        memcpy(newbp, oldbp, copySize);
+        mm_free(oldbp);
+    }
+
+    return newbp;
+
+
+
+    // void *oldptr = ptr;
+    // void *newptr;
+    // size_t copySize;
+
+    // newptr = mm_malloc(size);
+    // if (newptr == NULL)
+    //     return NULL;
+    // copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+    // if (size < copySize)
+    //     copySize = size;
+    // memcpy(newptr, oldptr, copySize);
+    // mm_free(oldptr);
+    // return newptr;
 }
