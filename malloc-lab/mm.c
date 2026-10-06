@@ -401,9 +401,9 @@ void *mm_realloc(void *ptr, size_t size)
     // 2. 새로운 메모리 < 기존 메모리
     if (old_size >= new_size) {
         if(old_size > new_size){ // 필요없는 공간 가용블록으로 돌려주기
-            PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 0)); // 기존 header 정정
-            
-            PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // footer
+            PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
+            PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // new footer 추가 
+
             PUT(oldbp + new_size - WSIZE, PACK_BLOCK(old_size - new_size, 0)); // free 할 곳 헤더 추가
 
             void *free_ptr = oldbp + new_size;
