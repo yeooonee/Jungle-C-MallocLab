@@ -466,7 +466,7 @@ void *mm_realloc(void *ptr, size_t size)
                 // new header 추가
                 PUT(prev_bp + new_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
                 // 기존 old footer 사이즈 변경
-                PUT(oldbp + old_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
+                PUT(oldbp + old_size - DSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
 
                 mm_free(prev_bp + new_size);
             }
