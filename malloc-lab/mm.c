@@ -453,10 +453,11 @@ void *mm_realloc(void *ptr, size_t size)
             // prev header 변경
             PUT(GET_HEADER(prev_bp), PACK_BLOCK(new_size, 1));
             // old footer 변경
-            PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
+            // PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
+            PUT(GET_FOOTER(prev_bp + new_size), PACK_BLOCK(new_size, 1));
 
             // 데이터 옮겨담기 (memcopy는 영역이 겹칠 때 정의되지 않은 동작 발생)
-            memmove(prev_bp, oldbp, size);
+            memmove(prev_bp, oldbp, old_size);
 
             // 기존 블록 필요한 사이즈만큼 분리 + 병합 (free)
             if(prev_size > chk_block){
