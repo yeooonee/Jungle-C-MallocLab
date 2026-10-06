@@ -368,6 +368,7 @@ void *mm_realloc(void *ptr, size_t size)
         realloc : 정말 좋은 성능을 얻으려면 독립적인 realloc 이 필요하다.
         1. 크기가 size 인 블록의 주소를 돌려준다.
         2. 새 블록의 내용은 옛 크기와 새 크기 중 작은쪽까지 옛 블록과 같다. -> 두 블록 모두에 존재하는 범위까지만 같다. 
+        size 는 paylaod 만임 !
 
         * 새로 받아서 옮기기
         * 제자리에서 해결하기
@@ -398,7 +399,18 @@ void *mm_realloc(void *ptr, size_t size)
     
     // 1. 새로운 메모리 = 기존 메모리
     // 2. 새로운 메모리 < 기존 메모리
-    if (old_size >= new_size) return oldbp; 
+    if (old_size >= new_size) {
+        if(old_size > new_size){ // 필요없는 공간 가용블록으로 돌려주기
+            PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 0)); // 기존 header 정정
+            
+            PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // footer
+            PUT(oldbp + new_size - WSIZE, PACK_BLOCK(old_size - new_size, 0)); // free 할 곳 헤더 추가
+
+            void *free_ptr = oldbp + new_size;
+            mm_free(free_ptr);
+        }
+        return oldbp; 
+    }
     
     
     // 3. 새로운 메모리 > 기존 메모리
