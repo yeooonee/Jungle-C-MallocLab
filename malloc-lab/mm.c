@@ -397,15 +397,13 @@ void *mm_realloc(void *ptr, size_t size)
     copySize = old_size - DSIZE;
     
     
-    // 1. 새로운 메모리 = 기존 메모리
-    // 2. 새로운 메모리 < 기존 메모리
+    // 1. 기존 메모리 <= 새로운 메모리 
     if (old_size >= new_size) {
         if(old_size > new_size){ // 필요없는 공간 가용블록으로 돌려주기
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // new footer 추가 
 
             PUT(oldbp + new_size - WSIZE, PACK_BLOCK(old_size - new_size, 0)); // free 할 곳 헤더 추가
-
             void *free_ptr = oldbp + new_size;
             mm_free(free_ptr);
         }
@@ -413,12 +411,52 @@ void *mm_realloc(void *ptr, size_t size)
     }
     
     
-    // 3. 새로운 메모리 > 기존 메모리
+    // 2. 기존 메모리 > 새로운 메모리 
     else {
-        newbp = mm_malloc(size);
-        if (newbp == NULL) return NULL;
-        memcpy(newbp, oldbp, copySize);
-        mm_free(oldbp);
+        // 뒷공간 확인
+        void *next_bp = NEXT_BLKP(oldbp);
+        int next_size = GET_SIZE(GET_HEADER(next_bp));
+        int next_alloc = GET_ALLOC(GET_HEADER(next_bp));
+
+        // 1. 기존 메모리 뒷공간에 자리가 남으면 제자리 할당
+        if (!next_alloc && next_size >= new_size){
+            
+
+            // 뒷 블록 필요한 사이즈만큼 분리
+            if(next_size > new_size - old_size){ // TODO 8 기준으로 바꿀 것 
+                
+                
+                // 기존 header 변경 
+                PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
+                // new footer 추가
+                PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
+
+                // new header 추가
+                PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size - old_size, 0));
+                // 기존 footer 변경
+                PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size - old_size, 0));
+
+
+                
+                // PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
+                // PUT(next_bp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // new footer 추가 
+
+                // PUT(next_bp + new_size - WSIZE, PACK_BLOCK(next_size - (new_size - old_size), 0)); // free 할 곳 헤더 추가
+
+            }
+
+            // 기존 블록 + 뒷 블록 병합 
+            PUT(oldbp);
+        }
+        
+        // 2. 없으면 새 malloc
+        else {
+            newbp = mm_malloc(size);
+            if (newbp == NULL) return NULL;
+            memcpy(newbp, oldbp, copySize);
+            mm_free(oldbp);
+        }   
+
     }
 
     return newbp;
