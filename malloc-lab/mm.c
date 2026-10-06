@@ -168,7 +168,7 @@ static void *extend_heap(size_t words){
 }
 
 /* find fit - first */
-static void *find_fid_first (size_t asize){
+static void *find_fit_first (size_t asize){
     // first_fit
     char *bp = heap_list_p;
     bp = NEXT_BLKP(bp);
@@ -192,15 +192,21 @@ static void *find_fid_first (size_t asize){
 
 // next_fit
 // 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
+static void *find_fit_next (size_t asize){
+
+}
+
+
+
 
 /* find fit */
 static void *find_fit(size_t asize){
-    
-
-
-
-
+    return find_fit_first(asize);
+    // return find_fit_next(asize);
 }
+
+
+
 
 // 가용블록 할당 및 분할
 /*
