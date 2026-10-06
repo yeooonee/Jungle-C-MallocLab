@@ -397,7 +397,7 @@ void *mm_realloc(void *ptr, size_t size)
     copySize = old_size - DSIZE;
     
     
-    // 1. 기존 메모리 <= 새로운 메모리 
+    // 1. 기존 메모리 >= 새로운 메모리 
     if (old_size >= new_size) {
         if(old_size > new_size){ // 필요없는 공간 가용블록으로 돌려주기
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
@@ -411,7 +411,7 @@ void *mm_realloc(void *ptr, size_t size)
     }
     
     
-    // 2. 기존 메모리 > 새로운 메모리 
+    // 2. 기존 메모리 < 새로운 메모리 
     else {
         // 뒷공간 확인
         void *next_bp = NEXT_BLKP(oldbp);
@@ -419,7 +419,7 @@ void *mm_realloc(void *ptr, size_t size)
         int next_alloc = GET_ALLOC(GET_HEADER(next_bp));
 
         // 1. 기존 메모리 뒷공간에 자리가 남으면 제자리 할당
-        if (!next_alloc && next_size >= new_size){
+        if (!next_alloc && next_size >= new_size - old_size){
             
 
             // 뒷 블록 필요한 사이즈만큼 분리
@@ -440,7 +440,7 @@ void *mm_realloc(void *ptr, size_t size)
             // new footer 추가
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
 
-            
+            return oldbp;
         }
         
         // 2. 없으면 새 malloc
