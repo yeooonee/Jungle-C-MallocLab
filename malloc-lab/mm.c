@@ -204,7 +204,7 @@ static void *find_fit(size_t asize){
 static void place(void *bp, size_t asize){
     size_t block_size = GET_SIZE(GET_HEADER(bp));
     
-    if (block_size > 2 * asize){ // TODO 
+    if (block_size > asize ){ // TODO 
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0));
 
         // bp + size 했을 때 
@@ -243,7 +243,7 @@ static void *coalesce(void *bp){
     // 2. 앞에 있을 떄
     if (!prev_alloc && next_alloc){
         // 앞 블록 헤더 + 현재 블록 푸터 사이즈 변경 
-        size += GET_SIZE(PREV_BLKP(bp));
+        size += GET_SIZE(GET_HEADER(PREV_BLKP(bp)));
         PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
         PUT(GET_FOOTER(bp), PACK_BLOCK(size, 0));
         // bp 이동 
@@ -254,16 +254,16 @@ static void *coalesce(void *bp){
     // 3. 뒤에 있을 떄
     else if (prev_alloc && !next_alloc){
         // 현재 블록 헤더 + 뒷 블록 푸터 사이즈 변경
-        size += GET_SIZE(NEXT_BLKP(bp));
-        PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
+        size += GET_SIZE(GET_HEADER(NEXT_BLKP(bp)));
         PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
+        PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
     }
 
 
     // 4. 둘다 있을 때 
     else {
-        size += GET_SIZE(PREV_BLKP(bp));
-        size += GET_SIZE(NEXT_BLKP(bp));
+        size += GET_SIZE(GET_HEADER(PREV_BLKP(bp)));
+        size += GET_SIZE(GET_HEADER(NEXT_BLKP(bp)));
 
         PUT(GET_HEADER(PREV_BLKP(bp)), PACK_BLOCK(size, 0));
         PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
