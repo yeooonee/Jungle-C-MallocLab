@@ -458,7 +458,7 @@ void *mm_realloc(void *ptr, size_t size)
 
             // new footer 추가
             // PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
-            PUT(GET_FOOTER(prev_bp + new_size - WSIZE), PACK_BLOCK(new_size, 1));
+            PUT(prev_bp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
 
 
             // 기존 블록 필요한 사이즈만큼 분리 + 병합 (free)
@@ -474,9 +474,6 @@ void *mm_realloc(void *ptr, size_t size)
             return prev_bp;
             
         }
-
-
-        
         
         // 3. 없으면 새 malloc
         else {
