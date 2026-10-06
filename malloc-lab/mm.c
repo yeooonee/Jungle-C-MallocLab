@@ -452,22 +452,26 @@ void *mm_realloc(void *ptr, size_t size)
         else if (!prev_alloc && prev_size >= chk_block){
             // prev header 변경
             PUT(GET_HEADER(prev_bp), PACK_BLOCK(new_size, 1));
-            // old footer 변경
-            // PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
-            PUT(GET_FOOTER(prev_bp + new_size), PACK_BLOCK(new_size, 1));
-
+            
             // 데이터 옮겨담기 (memcopy는 영역이 겹칠 때 정의되지 않은 동작 발생)
             memmove(prev_bp, oldbp, old_size);
+
+            // new footer 추가
+            // PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
+            PUT(GET_FOOTER(prev_bp + new_size - WSIZE), PACK_BLOCK(new_size, 1));
+
 
             // 기존 블록 필요한 사이즈만큼 분리 + 병합 (free)
             if(prev_size > chk_block){
                 // new header 추가
-                PUT(prev_bp + new_size, PACK_BLOCK(prev_size + old_size - new_size, 0));
+                PUT(prev_bp + new_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
                 // 기존 old footer 사이즈 변경
-                PUT(prev_bp + old_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
+                PUT(oldbp + old_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
 
                 mm_free(prev_bp + new_size);
             }
+
+            return prev_bp;
             
         }
 
