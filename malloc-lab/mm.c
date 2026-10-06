@@ -424,29 +424,23 @@ void *mm_realloc(void *ptr, size_t size)
 
             // 뒷 블록 필요한 사이즈만큼 분리
             if(next_size > new_size - old_size){ // TODO 8 기준으로 바꿀 것 
-                
-                
-                // 기존 header 변경 
-                PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
-                // new footer 추가
-                PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
-
                 // new header 추가
-                PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size - old_size, 0));
+                PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size + old_size, 0));
                 // 기존 footer 변경
-                PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size - old_size, 0));
-
-
+                PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size + old_size, 0));
                 
                 // PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
                 // PUT(next_bp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // new footer 추가 
+                
+                // PUT(next_bp + new_size - WSIZE, PACK_BLOCK(next_size - (new_size - old_size), 0)); // free 할 곳 헤더 추가    
+            } 
 
-                // PUT(next_bp + new_size - WSIZE, PACK_BLOCK(next_size - (new_size - old_size), 0)); // free 할 곳 헤더 추가
+            // 기존 header 변경 
+            PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
+            // new footer 추가
+            PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
 
-            }
-
-            // 기존 블록 + 뒷 블록 병합 
-            PUT(oldbp);
+            
         }
         
         // 2. 없으면 새 malloc
