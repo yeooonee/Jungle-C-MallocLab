@@ -424,7 +424,8 @@ void *mm_realloc(void *ptr, size_t size)
         int prev_alloc = GET_ALLOC(GET_FOOTER(prev_bp));
 
         // 기준 
-        size_t chk_block = new_size - old_size;
+        size_t chk_block = abs(new_size - old_size);
+        //음수???
 
         // 1. 기존 메모리 뒷공간에 자리가 남으면 제자리 할당
         if (!next_alloc && next_size >= chk_block){
@@ -478,6 +479,9 @@ void *mm_realloc(void *ptr, size_t size)
             return prev_bp;
             
         }
+
+        // 3. 앞뒤 사이즈 확인
+
         
         // 3. 없으면 새 malloc
         else {
