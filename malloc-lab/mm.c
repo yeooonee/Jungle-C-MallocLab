@@ -437,13 +437,17 @@ void *mm_realloc(void *ptr, size_t size)
                 // 기존 footer 변경
                 PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size + old_size, 0)); 
 
-                mm_free(oldbp + new_size - WSIZE);
+                
             } 
 
             // 기존 header 변경 
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
             // new footer 추가
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
+
+            if (next_size > chk_block){
+                mm_free(oldbp + new_size);
+            }
 
             return oldbp;
         }
