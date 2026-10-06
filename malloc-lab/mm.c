@@ -415,19 +415,29 @@ void *mm_realloc(void *ptr, size_t size)
     else {
         // 뒷공간 확인
         void *next_bp = NEXT_BLKP(oldbp);
-        int next_size = GET_SIZE(GET_HEADER(next_bp));
+        size_t next_size = GET_SIZE(GET_HEADER(next_bp));
         int next_alloc = GET_ALLOC(GET_HEADER(next_bp));
 
+        // 앞공간 확인 
+        void *prev_bp = PREV_BLKP(oldbp);
+        size_t prev_size = GET_SIZE(GET_FOOTER(prev_bp));
+        int prev_alloc = GET_ALLOC(GET_FOOTER(prev_bp));
+
+        // 기준 
+        size_t chk_block = new_size - old_size;
+
         // 1. 기존 메모리 뒷공간에 자리가 남으면 제자리 할당
-        if (!next_alloc && next_size >= new_size - old_size){
+        if (!next_alloc && next_size >= chk_block){
             
 
             // 뒷 블록 필요한 사이즈만큼 분리
-            if(next_size > new_size - old_size){ // TODO 8 기준으로 바꿀 것 
+            if(next_size > chk_block){ // TODO 8 기준으로 바꿀 것 
                 // new header 추가
                 PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size + old_size, 0));
                 // 기존 footer 변경
                 PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size + old_size, 0)); 
+
+                mm_free(oldbp + new_size - WSIZE);
             } 
 
             // 기존 header 변경 
@@ -437,8 +447,33 @@ void *mm_realloc(void *ptr, size_t size)
 
             return oldbp;
         }
+
+        // 2. 기존 메모리 앞공간에 자리가 남으면 제자리 할당
+        else if (!prev_alloc && prev_size >= chk_block){
+            // prev header 변경
+            PUT(GET_HEADER(prev_bp), PACK_BLOCK(new_size, 1));
+            // old footer 변경
+            PUT(GET_FOOTER(oldbp), PACK_BLOCK(new_size, 1));
+
+            // 데이터 옮겨담기 (memcopy는 영역이 겹칠 때 정의되지 않은 동작 발생)
+            memmove(prev_bp, oldbp, size);
+
+            // 기존 블록 필요한 사이즈만큼 분리 + 병합 (free)
+            if(prev_size > chk_block){
+                // new header 추가
+                PUT(prev_bp + new_size, PACK_BLOCK(prev_size + old_size - new_size, 0));
+                // 기존 old footer 사이즈 변경
+                PUT(prev_bp + old_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
+
+                mm_free(prev_bp + new_size);
+            }
+            
+        }
+
+
         
-        // 2. 없으면 새 malloc
+        
+        // 3. 없으면 새 malloc
         else {
             newbp = mm_malloc(size);
             if (newbp == NULL) return NULL;
