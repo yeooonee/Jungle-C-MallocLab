@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -202,7 +203,7 @@ static void *find_fit_next (size_t asize){
     size_t size = GET_SIZE(GET_HEADER(next_fit_p));
     size_t alloc = GET_ALLOC(GET_HEADER(next_fit_p));
 
-    void *start_bp = next_fit_p;
+    char *start_bp = next_fit_p;
 
     // while(size > 0){
     for(; size >= 0 ;size = GET_SIZE(GET_HEADER(next_fit_p)), alloc = GET_ALLOC(GET_HEADER(next_fit_p))){
@@ -230,7 +231,31 @@ static void *find_fit_next (size_t asize){
 
 // 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
 static void *find_fit_best (size_t asize){
+    char *bp = NEXT_BLKP(heap_list_p);
+    size_t size = GET_SIZE(GET_HEADER(bp));
+    size_t alloc = GET_ALLOC(GET_HEADER(bp));
 
+    size_t biggest = (size_t)-1;
+    char *min_bp = bp;
+    size_t min_size = biggest;
+
+
+    while(size > 0){
+        // 딱 맞는 크기면 바로 반환
+        if (size == asize) return bp;
+
+        // min 갱신
+        if (!alloc && size >= asize && min_size > size) {
+            min_bp = bp;
+            min_size = size;
+        }
+
+        bp = NEXT_BLKP(bp);
+        size = GET_SIZE(GET_HEADER(bp));
+        alloc = GET_ALLOC(GET_HEADER(bp));
+    }
+
+    return min_bp;
 }
 
 
