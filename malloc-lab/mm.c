@@ -507,7 +507,7 @@ void *mm_realloc(void *ptr, size_t size)
             
 
             // 뒷 블록 필요한 사이즈만큼 분리
-            if(next_size - chk_block > 2 * DSIZE){ // TODO 8 기준으로 바꿀 것 
+            if(next_size - chk_block >= 2 * DSIZE){ // TODO 8 기준으로 바꿀 것 
                 // new header 추가
                 PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size + old_size, 0));
                 // 기존 footer 변경
@@ -521,7 +521,7 @@ void *mm_realloc(void *ptr, size_t size)
             // new footer 추가
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
             
-            if (next_size - chk_block > 2 * DSIZE){
+            if (next_size - chk_block >= 2 * DSIZE){
                 mm_free(oldbp + new_size);
             } 
             if(TYPE == TYPE_NEXT) next_fit_p = oldbp;
@@ -530,6 +530,10 @@ void *mm_realloc(void *ptr, size_t size)
 
         // 2. 기존 메모리 앞공간에 자리가 남으면 제자리 할당
         else if (!prev_alloc && prev_size >= chk_block){
+
+            if(prev_size - chk_block < 2 * DSIZE) new_size = prev_size + old_size;
+
+
             // prev header 변경
             PUT(GET_HEADER(prev_bp), PACK_BLOCK(new_size, 1));
 
@@ -542,7 +546,7 @@ void *mm_realloc(void *ptr, size_t size)
 
 
             // 기존 블록 필요한 사이즈만큼 분리 + 병합 (free)
-            if(prev_size > chk_block){
+            if(prev_size - chk_block >= 2 * DSIZE){
                 // new header 추가
                 PUT(prev_bp + new_size - WSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
                 // 기존 old footer 사이즈 변경
