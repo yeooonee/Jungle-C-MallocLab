@@ -74,6 +74,7 @@ team_t team = {
 
 // heap 을 처음부터 훑기 위해 넣은 전역변수 
 static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해서 char (1byte)니까 
+static char *next_fit_p;
 // char 는 모든 기계에서 1byte 임 
 // static : 다른 코드에서 참조 하지 말라. 참조할 수 잇는 범위가 파일 안으로 제한됨.
 
@@ -105,6 +106,7 @@ int mm_init(void)
 
     // bp 이동하기
     heap_list_p += 2*WSIZE;
+    next_fit_p = heap_list_p;
 
     // TODO: malloc 에서 힙 필요 시 늘리기. -> extend_heap 을 호출하고, 없으면 init 하기 
     // mdriver 의 호출 패턴에 맞춰 설계하는 것 금지.
@@ -192,12 +194,38 @@ static void *find_fit_first (size_t asize){
 
 
 // next_fit
-// 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
-static void *find_fit_next (size_t asize){
+// 중단점 전역으로 저장해두고, 중단점부터 시작
+static void *find_fit_next (size_t asize){    
+    // 전역 중단점 자체를 수정
+    size_t size = GET_SIZE(GET_HEADER(next_fit_p));
+    size_t alloc = GET_ALLOC(GET_HEADER(next_fit_p));
 
+    void *start_bp = next_fit_p;
+
+    // while(size > 0){
+    while(size = GET_SIZE(GET_HEADER(next_fit_p)), alloc = GET_ALLOC(GET_HEADER(next_fit_p))){
+        
+        if (size == 0){
+            next_fit_p = heap_list_p;
+        }
+        
+        if(!alloc && size >= asize){
+            return next_fit_p;
+        }
+        
+        next_fit_p = NEXT_BLKP(next_fit_p);
+        
+        if (next_fit_p == start_bp){
+            return NULL;
+        }
+    }
+
+    return NULL;
+    
 }
 
 
+// 반복문으로 for 문 돌면서 다음 블록 헤더 확인 -> size 차이가 가장 적은 값 저장해둠. 다 돌고 return
 static void *find_fit_best (size_t asize){
 
 }
@@ -207,8 +235,8 @@ static void *find_fit_best (size_t asize){
 
 /* find fit */
 static void *find_fit(size_t asize){
-    return find_fit_first(asize);
-    // return find_fit_next(asize);
+    // return find_fit_first(asize);
+    return find_fit_next(asize);
     // return find_fit_best(asize);
 }
 
