@@ -203,11 +203,17 @@ static void *find_fit_next (size_t asize){
     void *start_bp = next_fit_p;
 
     // while(size > 0){
-    while(size = GET_SIZE(GET_HEADER(next_fit_p)), alloc = GET_ALLOC(GET_HEADER(next_fit_p))){
+    for(; size >= 0 ;size = GET_SIZE(GET_HEADER(next_fit_p)), alloc = GET_ALLOC(GET_HEADER(next_fit_p))){
         
+        // eb 도착하면 처음으로 되돌림
         if (size == 0){
             next_fit_p = heap_list_p;
+
+            if(next_fit_p == start_bp){
+                return NULL;
+            }
         }
+        
         
         if(!alloc && size >= asize){
             return next_fit_p;
