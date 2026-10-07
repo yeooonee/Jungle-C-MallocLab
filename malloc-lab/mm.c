@@ -264,9 +264,9 @@ static void *find_fit_best (size_t asize){
 
 /* find fit */
 static void *find_fit(size_t asize){
-    // return find_fit_first(asize);
+    return find_fit_first(asize);
     // return find_fit_next(asize);
-    return find_fit_best(asize);
+    // return find_fit_best(asize);
 }
 
 
