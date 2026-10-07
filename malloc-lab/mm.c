@@ -198,12 +198,18 @@ static void *find_fit_next (size_t asize){
 }
 
 
+static void *find_fit_best (size_t asize){
+
+}
+
+
 
 
 /* find fit */
 static void *find_fit(size_t asize){
     return find_fit_first(asize);
     // return find_fit_next(asize);
+    // return find_fit_best(asize);
 }
 
 
@@ -439,15 +445,15 @@ void *mm_realloc(void *ptr, size_t size)
 
                 
             } 
-
+            
             // 기존 header 변경 
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
             // new footer 추가
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
-
+            
             if (next_size > chk_block){
                 mm_free(oldbp + new_size);
-            }
+            } 
 
             return oldbp;
         }
