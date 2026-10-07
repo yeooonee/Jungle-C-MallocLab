@@ -73,7 +73,8 @@ team_t team = {
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
 #define TYPE_NEXT 1
-#define TYPE TYPE_NEXT
+#define TYPE_BEST 2
+#define TYPE TYPE_BEST
 
 // heap 을 처음부터 훑기 위해 넣은 전역변수 
 static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해서 char (1byte)니까 
@@ -236,13 +237,13 @@ static void *find_fit_best (size_t asize){
     size_t alloc = GET_ALLOC(GET_HEADER(bp));
 
     size_t biggest = (size_t)-1;
-    char *min_bp = bp;
+    char *min_bp = NULL;
     size_t min_size = biggest;
 
 
     while(size > 0){
         // 딱 맞는 크기면 바로 반환
-        if (size == asize) return bp;
+        if (!alloc & size == asize) return bp;
 
         // min 갱신
         if (!alloc && size >= asize && min_size > size) {
@@ -502,8 +503,6 @@ void *mm_realloc(void *ptr, size_t size)
                 PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size + old_size, 0));
                 // 기존 footer 변경
                 PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size + old_size, 0)); 
-
-                
             } 
             
             // 기존 header 변경 
