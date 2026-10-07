@@ -71,6 +71,8 @@ team_t team = {
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
+#define TYPE_NEXT 1
+#define TYPE TYPE_NEXT
 
 // heap 을 처음부터 훑기 위해 넣은 전역변수 
 static char *heap_list_p; // p 연산할때 바이트 단위로 연산해야해서 char (1byte)니까 
@@ -215,15 +217,11 @@ static void *find_fit_next (size_t asize){
         }
         
         
-        if(!alloc && size >= asize){
-            return next_fit_p;
-        }
+        if(!alloc && size >= asize) return next_fit_p;
         
         next_fit_p = NEXT_BLKP(next_fit_p);
         
-        if (next_fit_p == start_bp){
-            return NULL;
-        }
+        if (next_fit_p == start_bp) return NULL;
     }
 
     return NULL;
@@ -306,6 +304,7 @@ static void *coalesce(void *bp){
         // bp 이동 
         // bp = bp - GET_SIZE(PREV_BLKP(bp));
         bp = PREV_BLKP(bp);
+        if (TYPE == TYPE_NEXT) next_fit_p = bp;
     }
 
     // 3. 뒤에 있을 떄
@@ -314,6 +313,8 @@ static void *coalesce(void *bp){
         size += GET_SIZE(GET_HEADER(NEXT_BLKP(bp)));
         PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
         PUT(GET_HEADER(bp), PACK_BLOCK(size, 0));
+
+        if (TYPE == TYPE_NEXT) next_fit_p = GET_HEADER(bp) + WSIZE;
     }
 
 
@@ -326,6 +327,7 @@ static void *coalesce(void *bp){
         PUT(GET_FOOTER(NEXT_BLKP(bp)), PACK_BLOCK(size, 0));
 
         bp = PREV_BLKP(bp);
+        if (TYPE == TYPE_NEXT) next_fit_p = bp;
 
     }
 
@@ -488,7 +490,7 @@ void *mm_realloc(void *ptr, size_t size)
             if (next_size > chk_block){
                 mm_free(oldbp + new_size);
             } 
-
+            if(TYPE == TYPE_NEXT) next_fit_p = oldbp;
             return oldbp;
         }
 
@@ -512,9 +514,11 @@ void *mm_realloc(void *ptr, size_t size)
                 // 기존 old footer 사이즈 변경
                 PUT(oldbp + old_size - DSIZE, PACK_BLOCK(prev_size + old_size - new_size, 0));
 
+                
                 mm_free(prev_bp + new_size);
             }
-
+            
+            if(TYPE == TYPE_NEXT) next_fit_p = prev_bp;
             return prev_bp;
             
         }
