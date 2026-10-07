@@ -493,6 +493,15 @@ void *mm_realloc(void *ptr, size_t size)
         // 기준 
         size_t chk_block = new_size - old_size;
 
+        if (next_size == 0){
+            if(extend_heap(chk_block/WSIZE) != NULL){
+                next_bp = NEXT_BLKP(oldbp);
+                next_size = GET_SIZE(GET_HEADER(next_bp));
+                next_alloc = GET_ALLOC(GET_HEADER(next_bp));
+            }
+        }
+
+
         // 1. 기존 메모리 뒷공간에 자리가 남으면 제자리 할당
         if (!next_alloc && next_size >= chk_block){
             
