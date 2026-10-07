@@ -216,7 +216,6 @@ static void *find_fit_next (size_t asize){
             }
         }
         
-        
         if(!alloc && size >= asize) return next_fit_p;
         
         next_fit_p = NEXT_BLKP(next_fit_p);
@@ -240,8 +239,8 @@ static void *find_fit_best (size_t asize){
 /* find fit */
 static void *find_fit(size_t asize){
     // return find_fit_first(asize);
-    return find_fit_next(asize);
-    // return find_fit_best(asize);
+    // return find_fit_next(asize);
+    return find_fit_best(asize);
 }
 
 
