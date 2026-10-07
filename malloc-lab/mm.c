@@ -282,7 +282,7 @@ static void place(void *bp, size_t asize){
 
     // block_size - asize > 8 (최소 H + F 자리 남기기)    
     // if (block_size - asize > 8 ){ // 분할 
-    if(block_size > asize){
+    if(block_size - asize >= 2 * DSIZE){
 
         // bp + size 했을 때 
         PUT(GET_FOOTER(bp), PACK_BLOCK(block_size - asize, 0)); // 가용블록 남기기
@@ -466,7 +466,7 @@ void *mm_realloc(void *ptr, size_t size)
     
     // 1. 기존 메모리 >= 새로운 메모리 
     if (old_size >= new_size) {
-        if(old_size > new_size){ // 필요없는 공간 가용블록으로 돌려주기
+        if(old_size - new_size >= 2 * DSIZE){ // 필요없는 공간 가용블록으로 돌려주기
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1)); // 기존 header 정정
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size,1)); // new footer 추가 
 
@@ -507,19 +507,21 @@ void *mm_realloc(void *ptr, size_t size)
             
 
             // 뒷 블록 필요한 사이즈만큼 분리
-            if(next_size > chk_block){ // TODO 8 기준으로 바꿀 것 
+            if(next_size - chk_block > 2 * DSIZE){ // TODO 8 기준으로 바꿀 것 
                 // new header 추가
                 PUT(oldbp + new_size - WSIZE, PACK_BLOCK(next_size - new_size + old_size, 0));
                 // 기존 footer 변경
                 PUT(GET_FOOTER(next_bp), PACK_BLOCK(next_size - new_size + old_size, 0)); 
-            } 
+            } else {
+                new_size = next_size + old_size;
+            }
             
             // 기존 header 변경 
             PUT(GET_HEADER(oldbp), PACK_BLOCK(new_size, 1));
             // new footer 추가
             PUT(oldbp + new_size - DSIZE, PACK_BLOCK(new_size, 1));
             
-            if (next_size > chk_block){
+            if (next_size - chk_block > 2 * DSIZE){
                 mm_free(oldbp + new_size);
             } 
             if(TYPE == TYPE_NEXT) next_fit_p = oldbp;
